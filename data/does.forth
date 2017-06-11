@@ -1,0 +1,7 @@
+: ARRAY CREATE ALLOT DOES> SWAP + ;
+
+10 ARRAY X
+
+5 4 X !
+
+4 X ?

@@ -1,0 +1,14 @@
+: HEX 16 BASE ! ;
+: BIN  2 BASE ! ;
+
+DECIMAL
+
+." HEX 16 = " 16 HEX . CR
+
+." DEC 3FF = " 3FF DECIMAL . CR
+
+." BIN 9 = " 9 BIN . CR
+
+." DEC 10101 = " 10101 DECIMAL . CR
+
+." BIN 11 = " 11 BIN . CR

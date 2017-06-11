@@ -1,0 +1,10 @@
+remove THEN ELSE as builtin words and just use word
+all manual parsing must be done in readModifier
+case sensitivity
+add string support
+more real number support
+1+, 1- ... as builtin
+support + - * / directly on variables X Y + same as X @ Y @ +
+performance (remove State ?)
+how handle zero length input strings without filling buffer
+use more generic handling of cmp and inc (<, >, +, -)

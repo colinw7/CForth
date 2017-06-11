@@ -1,0 +1,1 @@
+: PSTACK ." Stack> " DEPTH 0 DO DEPTH I - PICK . LOOP CR ;
