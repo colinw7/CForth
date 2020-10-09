@@ -671,8 +671,8 @@ popToken(int n, TokenP &token)
 
   token = tokens_[nt - n];
 
-  for (int n1 = nt - n; n1 < nt; ++n)
-    tokens_[n1] = tokens_[n1 + 1];
+  for (int nn1 = nt - n; nn1 < nt; ++nn1)
+    tokens_[nn1] = tokens_[nn1 + 1];
 
   tokens_.pop_back();
 
@@ -1452,7 +1452,7 @@ exec()
 
   TokenP token = tokens_[nt - i];
 
-  for (int n1 = nt - i; n1 < nt; ++i)
+  for (int n1 = nt - i; n1 < nt; ++n1)
     tokens_[n1] = tokens_[n1 + 1];
 
   tokens_.pop_back();
