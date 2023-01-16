@@ -6,5 +6,5 @@ class Canvas : public QWidget {
  public:
   Canvas();
 
-  void paintEvent(QPaintEvent *e);
+  void paintEvent(QPaintEvent *e) override;
 };

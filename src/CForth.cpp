@@ -380,7 +380,7 @@ readNumberToken(Line &line, NumberTokenP &token)
       return State::lastError();
     }
 
-    token = NumberToken::makeInteger(sign*il);
+    token = NumberToken::makeInteger(int(sign*il));
   }
   else {
     double r = atof(str.c_str());
@@ -620,11 +620,11 @@ peekToken(TokenP &token)
 State
 peekToken(int n, TokenP &token)
 {
-  int nt = tokens_.size();
+  auto nt = tokens_.size();
 
   if (n <= 0) return State::error("Invalid index");
 
-  if (n > nt) return State::error("Stack too small");
+  if (n > int(nt)) return State::error("Stack too small");
 
   token = tokens_[nt - n];
 
@@ -663,15 +663,15 @@ popToken(TokenP &token)
 State
 popToken(int n, TokenP &token)
 {
-  int nt = tokens_.size();
+  auto nt = tokens_.size();
 
   if (n <= 0) return State::error("Invalid index");
 
-  if (n > nt) return State::error("Stack too small");
+  if (n > int(nt)) return State::error("Stack too small");
 
   token = tokens_[nt - n];
 
-  for (int nn1 = nt - n; nn1 < nt; ++nn1)
+  for (uint nn1 = uint(nt - n); nn1 < nt; ++nn1)
     tokens_[nn1] = tokens_[nn1 + 1];
 
   tokens_.pop_back();
@@ -1126,7 +1126,7 @@ isBaseChar(int c, int base, int *value)
   if (::islower(c1))
     c1 = ::toupper(c1);
 
-  std::string::size_type pos = base_chars.find((char) c1);
+  std::string::size_type pos = base_chars.find(char(c1));
 
   if (pos == std::string::npos || int(pos) >= base)
     return false;
@@ -1146,7 +1146,7 @@ toBaseInteger(const std::string &str, int base, long *integer)
     return State::error("Invalid Base");
 
   uint i   = 0;
-  uint len = str.size();
+  auto len = str.size();
 
   while (i < len) {
     int c = str[i];
@@ -1158,7 +1158,7 @@ toBaseInteger(const std::string &str, int base, long *integer)
 
     long integer1 = base*(*integer) + value;
 
-    if (long((integer1 - (long) value)/base) != *integer)
+    if (long((integer1 - long(value))/base) != *integer)
       return State::error("Overflow");
 
     *integer = integer1;
@@ -1203,10 +1203,10 @@ toUpper(const std::string &str)
 {
   std::string ustr = str;
 
-  uint len = ustr.size();
+  auto len = ustr.size();
 
   for (uint i = 0; i < len; ++i)
-    ustr[i] = toupper(ustr[i]);
+    ustr[i] = char(toupper(ustr[i]));
 
   return ustr;
 }
@@ -1355,7 +1355,7 @@ State
 SwapBuiltin::
 exec()
 {
-  uint n = tokens_.size();
+  auto n = tokens_.size();
 
   if (n < 2) return State::error("STACK EMPTY");
 
@@ -1374,7 +1374,7 @@ State
 OverBuiltin::
 exec()
 {
-  int nt = tokens_.size();
+  auto nt = tokens_.size();
 
   if (nt < 2) return State::error("STACK UNDERFLOW");
 
@@ -1394,7 +1394,7 @@ State
 RotBuiltin::
 exec()
 {
-  int nt = tokens_.size();
+  auto nt = tokens_.size();
 
   if (nt < 3) return State::error("STACK UNDERFLOW");
 
@@ -1446,13 +1446,13 @@ exec()
 
   int i = n.integer();
 
-  int nt = tokens_.size();
+  auto nt = tokens_.size();
 
-  if (i > nt) return State::error("STACK UNDERFLOW");
+  if (i > int(nt)) return State::error("STACK UNDERFLOW");
 
   TokenP token = tokens_[nt - i];
 
-  for (int n1 = nt - i; n1 < nt; ++n1)
+  for (uint n1 = uint(nt - i); n1 < nt; ++n1)
     tokens_[n1] = tokens_[n1 + 1];
 
   tokens_.pop_back();
@@ -1488,7 +1488,7 @@ State
 DepthBuiltin::
 exec()
 {
-  pushInteger(tokens_.size());
+  pushInteger(int(tokens_.size()));
 
   return State::success();
 }
@@ -1609,7 +1609,7 @@ State
 PlusBuiltin::
 exec()
 {
-  int nt = tokens_.size();
+  auto nt = tokens_.size();
 
   if (nt < 2) return State::error("STACK UNDERFLOW");
 
@@ -1650,7 +1650,7 @@ State
 MinusBuiltin::
 exec()
 {
-  int nt = tokens_.size();
+  auto nt = tokens_.size();
 
   if (nt < 2) return State::error("STACK UNDERFLOW");
 
@@ -1936,7 +1936,7 @@ State
 StoreBuiltin::
 exec()
 {
-  int nt = tokens_.size();
+  auto nt = tokens_.size();
 
   if (nt < 2) return State::error("STACK UNDERFLOW");
 
@@ -2179,7 +2179,7 @@ State
 IBuiltin::
 exec()
 {
-  uint n = retTokens_.size();
+  auto n = retTokens_.size();
 
   if (n < 2) return State::error("Not in DO");
 
@@ -2192,7 +2192,7 @@ State
 JBuiltin::
 exec()
 {
-  uint n = retTokens_.size();
+  auto n = retTokens_.size();
 
   if (n < 4) return State::error("Not in double nested DO");
 
@@ -2205,7 +2205,7 @@ State
 LeaveBuiltin::
 exec()
 {
-  for (int n = execTokens_.size() - 1; n >= 0; --n) {
+  for (int n = int(execTokens_.size()) - 1; n >= 0; --n) {
     TokenP execToken = execTokens_[n];
 
     if (! execToken->isBuiltin()) continue;
@@ -2542,7 +2542,7 @@ State
 KeyBuiltin::
 exec()
 {
-  char c = getch();
+  char c = char(getch());
 
   pushInteger(c);
 
@@ -2562,7 +2562,7 @@ exec()
   if (! popVarRef(var)) return State::lastError();
 
   for (int i = 0; i < n.integer(); ++i) {
-    char c = fgetc(stdin);
+    char c = char(fgetc(stdin));
 
     if (c == '\n')
       break;
@@ -2582,7 +2582,7 @@ exec()
   std::string str;
 
   for (int i = 0; i < n; ++i) {
-    char c = fgetc(stdin);
+    char c = char(fgetc(stdin));
 
     if (! str.empty() && c == '\n')
       break;
@@ -2608,7 +2608,7 @@ exec()
   if (! fillBuffer())
     return State::error("Missing char");
 
-  char lastC = n.integer();
+  char lastC = char(n.integer());
 
   std::string str;
 
@@ -2623,15 +2623,15 @@ exec()
   if (isDebug())
     std::cout << "Word: '" << str << "'" << std::endl;
 
-  int len = str.size();
+  auto len = str.size();
 
-  if (wordVar_->length() < len + 1)
-    wordVar_->allot(len + 1 - wordVar_->length());
+  if (wordVar_->length() < int(len + 1))
+    wordVar_->allot(int(len + 1 - wordVar_->length()));
 
-  wordVar_->setIndValue(0, NumberToken::makeInteger(len));
+  wordVar_->setIndValue(0, NumberToken::makeInteger(int(len)));
 
-  for (int i = 1; i <= len; ++i)
-    wordVar_->setIndValue(i, NumberToken::makeInteger(str[i - 1]));
+  for (size_t i = 1; i <= len; ++i)
+    wordVar_->setIndValue(int(i), NumberToken::makeInteger(str[i - 1]));
 
   pushToken(wordVar_);
 
@@ -2729,9 +2729,9 @@ State
 PStackBuiltin::
 exec()
 {
-  int nt = tokens_.size();
+  auto nt = tokens_.size();
 
-  for (int i = 0; i < nt; ++i) {
+  for (size_t i = 0; i < nt; ++i) {
     if (i > 0) std::cout << " ";
 
     tokens_[i]->print(std::cout);

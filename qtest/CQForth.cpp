@@ -10,7 +10,7 @@ class PlotBuiltin : public CForth::Builtin {
      CForth::Builtin(USER_BUILTIN, "PLOT") {
    }
 
-   CForth::State exec();
+   CForth::State exec() override;
 };
 
 Canvas *canvas;

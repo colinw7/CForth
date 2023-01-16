@@ -91,7 +91,7 @@ namespace CForth {
   class Line {
    public:
     Line(const std::string &line="") :
-     str_(line), pos_(0), len_(str_.size()) {
+     str_(line), pos_(0), len_(int(str_.size())) {
     }
 
     void clear() {
@@ -163,7 +163,7 @@ namespace CForth {
     void insert(const std::string &str) {
       str_ = str_.substr(0, pos_) + str + str_.substr(pos_);
 
-      len_ += str.size();
+      len_ += int(str.size());
     }
 
    private:
@@ -212,10 +212,10 @@ namespace CForth {
 
       line.clear();
 
-      char c;
+      int c;
 
       while (fp_ && ((c = fgetc(fp_)) != EOF)) {
-        line.addChar(c);
+        line.addChar(char(c));
 
         if (c == '\n') break;
       }
@@ -442,7 +442,7 @@ namespace CForth {
 
     bool value() const { return b_; }
 
-    void print(std::ostream &os) const { os << (b_ ? "TRUE" : "FALSE"); }
+    void print(std::ostream &os) const override { os << (b_ ? "TRUE" : "FALSE"); }
 
    protected:
     bool b_;
@@ -475,7 +475,7 @@ namespace CForth {
       return std::make_shared<NumberToken>(n);
     }
 
-    TokenP dup() const { return std::make_shared<NumberToken>(number_); }
+    TokenP dup() const override { return std::make_shared<NumberToken>(number_); }
 
     const Number &number() const { return number_; }
 
@@ -488,7 +488,7 @@ namespace CForth {
     void setInteger(int    i) { number_.setInteger(i); }
     void setReal   (double r) { number_.setReal   (r); }
 
-    State cmp(const TokenP &token, int &res) const {
+    State cmp(const TokenP &token, int &res) const override {
       if (token->isNumber())
          res = Number::cmp(number_, NumberToken::fromToken(token)->number_);
       else
@@ -497,13 +497,13 @@ namespace CForth {
       return State::success();
     }
 
-    State inc(const Number &n) {
+    State inc(const Number &n) override {
       number_.inc(n);
 
       return State::success();
     }
 
-    void print(std::ostream &os) const;
+    void print(std::ostream &os) const override;
 
    public: // private
     NumberToken(const Number &number) :
@@ -668,15 +668,15 @@ namespace CForth {
 
     const std::string &name() const { return name_; }
 
-    bool isExecutable() const { return true; }
+    bool isExecutable() const override { return true; }
 
     virtual bool hasModifier() const { return false; }
 
     virtual State readModifier() { return State::success(); }
 
-    virtual State exec() = 0;
+    virtual State exec() override = 0;
 
-    virtual void print(std::ostream &os) const { os << name_; }
+    void print(std::ostream &os) const override { os << name_; }
 
    private:
     BuiltinType builtinType_;
@@ -735,7 +735,7 @@ namespace CForth {
 
     virtual VariableRefP indexVar(VarBaseP var, int ind) = 0;
 
-    State cmp(const TokenP &token, int &res) const {
+    State cmp(const TokenP &token, int &res) const override {
       if (token->isVarBase()) {
         long p1 =                            addr();
         long p2 = VarBase::fromToken(token)->addr();
@@ -750,7 +750,7 @@ namespace CForth {
       return State::success();
     }
 
-    State inc(const Number &n) {
+    State inc(const Number &n) override {
       setInd(ind() + n.integer());
 
       return State::success();
@@ -777,28 +777,28 @@ namespace CForth {
      VarBase(VARIABLE_TYPE), name_(name), ind_(0), constant_(false) {
     }
 
-    const std::string &name() const { return name_; }
+    const std::string &name() const override { return name_; }
 
-    int ind() const { return ind_; }
+    int ind() const override { return ind_; }
 
-    void setInd(int ind) { ind_ = ind; }
+    void setInd(int ind) override { ind_ = ind; }
 
-    virtual TokenP value() const {
+    TokenP value() const override {
       return indValue(ind_);
     }
 
-    virtual bool setValue(const TokenP &value) {
+    virtual bool setValue(const TokenP &value) override {
       return setIndValue(ind_, value);
     }
 
-    TokenP indValue(int ind) const {
+    TokenP indValue(int ind) const override {
       if (ind >= 0 && ind < int(values_.size()))
         return values_[ind];
       else
         return TokenP();
     }
 
-    bool setIndValue(int ind, TokenP value) {
+    bool setIndValue(int ind, TokenP value) override {
       if (ind < 0 || ind >= int(values_.size()))
         return false;
 
@@ -807,13 +807,13 @@ namespace CForth {
       return true;
     }
 
-    int length() const { return values_.size() - ind_; }
+    int length() const override { return int(values_.size() - ind_); }
 
     void setInteger(int i);
 
     bool getInteger(int &i) const;
 
-    bool isConstant() const { return constant_; }
+    bool isConstant() const override { return constant_; }
 
     void setConstant(bool constant) { constant_ = constant; }
 
@@ -830,13 +830,13 @@ namespace CForth {
       values_.push_back(token);
     }
 
-    long addr() const { return long(this) + ind_; }
+    long addr() const override { return long(this) + ind_; }
 
-    VariableRefP indexVar(VarBaseP var, int ind) {
+    VariableRefP indexVar(VarBaseP var, int ind) override {
       return std::make_shared<VariableRef>(var, ind + ind_);
     }
 
-    void print(std::ostream &os) const {
+    void print(std::ostream &os) const override {
       if (isConstant())
         value()->print(os);
       else
@@ -861,39 +861,39 @@ namespace CForth {
      VarBase(VAR_REF_TYPE), var_(var), ind_(ind) {
     }
 
-    TokenP dup() const { return std::make_shared<VariableRef>(var_, ind_); }
+    TokenP dup() const override { return std::make_shared<VariableRef>(var_, ind_); }
 
-    const std::string &name() const { return var_->name(); }
+    const std::string &name() const override { return var_->name(); }
 
-    int ind() const { return ind_; }
+    int ind() const override { return ind_; }
 
-    void setInd(int ind) { ind_ = ind; }
+    void setInd(int ind) override { ind_ = ind; }
 
-    TokenP value() const {
+    TokenP value() const override {
       return var_->indValue(ind_);
     }
 
-    bool setValue(const TokenP &value) {
+    bool setValue(const TokenP &value) override {
       return var_->setIndValue(ind_, value);
     }
 
-    TokenP indValue(int ind) const {
+    TokenP indValue(int ind) const override {
       return var_->indValue(ind_ + ind);
     }
 
-    bool setIndValue(int ind, TokenP value) {
+    bool setIndValue(int ind, TokenP value) override {
       return var_->setIndValue(ind_ + ind, value);
     }
 
-    int length() const { return var_->length() - ind_; }
+    int length() const override { return var_->length() - ind_; }
 
-    long addr() const { return var_->addr() + ind_; }
+    long addr() const override { return var_->addr() + ind_; }
 
-    VariableRefP indexVar(VarBaseP, int ind) {
+    VariableRefP indexVar(VarBaseP, int ind) override {
       return var_->indexVar(var_, ind + ind_);
     }
 
-    void print(std::ostream &os) const {
+    void print(std::ostream &os) const override {
       var_->print(os);
 
       os << "[" << ind_ << "]";
@@ -925,11 +925,11 @@ namespace CForth {
 
     const TokenArray &tokens() { return tokens_; }
 
-    bool isExecutable() const { return true; }
+    bool isExecutable() const override { return true; }
 
-    State exec();
+    State exec() override;
 
-    void print(std::ostream &os) const {
+    void print(std::ostream &os) const override {
       os << ": " << name_ << " ";
 
       for (auto token : tokens_) {
@@ -977,7 +977,7 @@ namespace CForth {
   class ID##Builtin : public Builtin { \
    public: \
     ID##Builtin() : Builtin(N##_BUILTIN,STR) { } \
-    State exec(); \
+    State exec() override; \
   }; \
   typedef std::shared_ptr<ID##Builtin> ID##BuiltinP;
 
@@ -986,7 +986,7 @@ namespace CForth {
   class ID##Builtin : public Builtin { \
    public: \
     ID##Builtin() : Builtin(N##_BUILTIN,STR) { } \
-    State exec() { return State::success(); } \
+    State exec() override { return State::success(); } \
   }; \
   typedef std::shared_ptr<ID##Builtin> ID##BuiltinP;
 
@@ -995,22 +995,22 @@ namespace CForth {
   class ID##Builtin : public Builtin { \
    public: \
     ID##Builtin(const VALUE &value=VALUE()) : Builtin(N##_BUILTIN,STR), VNAME(value) { } \
-    TokenP dup() const { return std::make_shared<ID##Builtin>(VNAME); } \
-    bool hasModifier() const { return true; } \
+    TokenP dup() const override { return std::make_shared<ID##Builtin>(VNAME); } \
+    bool hasModifier() const override { return true; } \
     const VALUE &getValue() const { return VNAME; } \
     VALUE &getValue() { return VNAME; } \
-    State readModifier(); \
-    void print(std::ostream &os) const; \
-    State exec(); \
+    State readModifier() override; \
+    void print(std::ostream &os) const override; \
+    State exec() override; \
     EXTRA \
    private: \
     VALUE VNAME; \
   }; \
   typedef std::shared_ptr<ID##Builtin> ID##BuiltinP;
 
-  #define DO_BLOCK virtual bool isBlock() const { return true; } State exec1(TokenP &, TokenP &);
-  #define IS_BLOCK virtual bool isBlock() const { return true; }
-  #define IS_NULL  virtual bool isNull () const { return true; }
+  #define DO_BLOCK bool isBlock() const override { return true; } State exec1(TokenP &, TokenP &);
+  #define IS_BLOCK bool isBlock() const override { return true; }
+  #define IS_NULL  bool isNull () const override { return true; }
   #define NO_DEF
 
   // Stack manipulation
