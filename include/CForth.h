@@ -17,7 +17,7 @@ namespace CForth {
   struct quitSignal : std::exception {
   };
 
-  bool isBaseChar(int c, int base, int *value=0);
+  bool isBaseChar(int c, int base, int *value=nullptr);
 
   // success/failure state
   class State {
@@ -141,7 +141,7 @@ namespace CForth {
     }
 
     bool isBaseChar(int base) const {
-      return CForth::isBaseChar(str_[pos_], base, 0);
+      return CForth::isBaseChar(str_[pos_], base, nullptr);
     }
 
     bool isAlpha() const {
@@ -157,7 +157,7 @@ namespace CForth {
     }
 
     bool isOneOf(const std::string &chars) const {
-      return std::strchr(chars.c_str(), str_[pos_]) != 0;
+      return std::strchr(chars.c_str(), str_[pos_]) != nullptr;
     }
 
     void insert(const std::string &str) {
@@ -178,14 +178,14 @@ namespace CForth {
   class File {
    public:
     File(const char *filename="") :
-     filename_(filename), fp_(0) {
+     filename_(filename), fp_(nullptr) {
     }
 
    ~File() {
       close();
     }
 
-    bool isValid() const { return (fp_ != 0); }
+    bool isValid() const { return (fp_ != nullptr); }
 
     State open() {
       close();
@@ -203,7 +203,7 @@ namespace CForth {
 
       fclose(fp_);
 
-      fp_ = 0;
+      fp_ = nullptr;
     }
 
     bool readLine(Line &line) {
